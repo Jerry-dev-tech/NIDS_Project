@@ -129,6 +129,4 @@ and is intended for educational and research purposes.
 ⭐ Author
 Jerlin G George
 MCA @Viswa vidyapeetham
-github: 
-MCA Student
-GitHub: https://github.com/Jerry-dev-tech�
+GitHub: 
