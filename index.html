@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>NIDS — Live Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>NIDS — Live Dashboard</h1>
+      <div class="controls">
+        <select id="protocolFilter">
+          <option>All</option>
+          <option>TCP</option>
+          <option>UDP</option>
+          <option>ICMP</option>
+          <option>OTHER</option>
+        </select>
+        <button id="btnClear">Clear Alerts</button>
+        <div id="status" class="status small">Status: disconnected</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="left-col">
+        <div class="card">
+          <h3>Protocol Counts</h3>
+          <div id="protocolCards"></div>
+        </div>
+
+        <div class="card">
+          <h3>Severity</h3>
+          <div class="sev-badges">
+            <div class="badge low">Low <span id="sev-low">0</span></div>
+            <div class="badge medium">Medium <span id="sev-med">0</span></div>
+            <div class="badge high">High <span id="sev-high">0</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Top Alert Types</h3>
+          <div id="topTypes"><em>No alert types yet</em></div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="card chart-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>Alert Trend</strong>
+            <div>Total: <span id="totalCount">0</span></div>
+          </div>
+          <canvas id="alertChart" style="width:100%; height:170px;"></canvas>
+        </div>
+
+        <div class="card">
+          <h3>Recent Alerts</h3>
+          <table class="alerts-table">
+            <thead>
+              <tr>
+                <th class="small">Time</th>
+                <th>Proto</th>
+                <th>Src → Dst</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody id="alerts_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/main.js"></script>
+</body>
+</html>
