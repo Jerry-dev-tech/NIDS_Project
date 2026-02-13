@@ -52,7 +52,6 @@ Platform: Windows
 📂 Project Structure
 
 NIDS_Project/
-│
 ├── app.py                   # Main Flask application & packet processing
 ├── feature_extraction.py    # Packet feature extraction logic
 ├── train_simple_model.py    # ML model training using NSL-KDD dataset
