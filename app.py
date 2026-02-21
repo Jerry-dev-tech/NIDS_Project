@@ -6,11 +6,10 @@ from collections import deque, defaultdict, Counter
 
 import joblib
 from flask import Flask, render_template, jsonify
-from scapy.all import sniff, get_if_list, conf
+from scapy.all import sniff, get_if_list, conf, IP, IPv6
 
 from feature_extraction import pkt_to_basic_features
 
-#Paths & Config
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,10 +18,10 @@ FEATURES_PATH = os.path.join(BASE_DIR, "model_artifacts", "feature_columns.json"
 
 DEFAULT_IFACE = os.environ.get(
     "NIDS_IFACE",
-    r"\Device\NPF_{1601AAEB-8611-4579-9826-6EDB63D01BAC}" 
+    r"\Device\NPF_{1601AAEB-8611-4579-9826-6EDB63D01BAC}"
 )
 
-#ML model
+#  Load ML model
 
 model = None
 FEATURE_COLS = None
@@ -38,7 +37,7 @@ if os.path.exists(MODEL_PATH) and os.path.exists(FEATURES_PATH):
 else:
     print("[INFO] No model found → running in rule mode")
 
-#Runtime storage
+# Runtime storage
 
 alerts = deque(maxlen=2000)
 
@@ -48,7 +47,7 @@ alert_type_counts = Counter()
 
 recent_src_dst = defaultdict(deque)
 
-#Flask App
+# Flask App
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -80,7 +79,7 @@ def clear_alerts():
     recent_src_dst.clear()
     return jsonify({"ok": True})
 
-#Helpers
+# Helpers
 
 def build_feature_vector(basic_features):
     row = {c: 0 for c in FEATURE_COLS}
@@ -118,7 +117,7 @@ def detect_ddos(src, dst):
 
     return len(dq) > 40
 
-#Packet Processor
+# Packet Processor
 
 def process_packet(pkt):
     try:
@@ -135,8 +134,17 @@ def process_packet(pkt):
         elif pkt.haslayer("ICMP"):
             proto = "ICMP"
 
-        src = pkt.getlayer("IP").src if pkt.haslayer("IP") else "?"
-        dst = pkt.getlayer("IP").dst if pkt.haslayer("IP") else "?"
+        if pkt.haslayer(IP):
+            src = pkt[IP].src
+            dst = pkt[IP].dst
+
+        elif pkt.haslayer(IPv6):
+            src = pkt[IPv6].src
+            dst = pkt[IPv6].dst
+
+        else:
+            src = "?"
+            dst = "?"
 
         ts = time.strftime("%H:%M:%S")
 
@@ -174,7 +182,6 @@ def process_packet(pkt):
             except Exception as e:
                 print("[ML ERROR]", e)
 
-        # always create alert 
         alert = {
             "time": ts,
             "proto": proto,
@@ -190,6 +197,8 @@ def process_packet(pkt):
 
     except Exception as e:
         print("[ERROR] process_packet:", e)
+
+# Capture Thread
 
 def scapy_capture_thread(iface):
     print("[OK] Sniffing on:", iface)
@@ -224,6 +233,8 @@ def start_capture():
     )
     t.start()
     print("[OK] Sniffer thread started")
+
+# Main
 
 if __name__ == "__main__":
     print("[SYSTEM] NIDS starting...")
